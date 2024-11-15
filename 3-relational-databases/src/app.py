@@ -194,6 +194,18 @@ def add_friend(user_id, friend_id):
         return failure_response("One or more users not found.")
 
 
+# TASK 2
+@app.route("/api/extra/users/<int:id>/join/")
+def get_join_transactions(id):
+    """
+    Returns the transactions of the given user.
+    """
+    user = DB.get_user_by_id(id)
+    if user is None:
+        return failure_response("User not found.")
+    return success_response({"transactions": DB.join_query(id)})
+
+
 # DEPRECATED
 # @app.route("/api/send/", methods=["POST"])
 # def send_money():
