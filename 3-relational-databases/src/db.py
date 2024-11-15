@@ -25,6 +25,7 @@ class DatabaseDriver(object):
         self.conn.execute("PRAGMA foreign_keys = 1")
         self.create_user_table()
         self.create_transactions_table()
+        self.create_friend_table()
 
     def create_user_table(self):
         try:
@@ -191,6 +192,48 @@ class DatabaseDriver(object):
             (timestamp, accepted, id),
         )
         self.conn.commit()
+
+    # OPTIONAL TASKS
+    # TASK 1
+    def create_friend_table(self):
+        try:
+            self.conn.execute(
+                """
+                CREATE TABLE friend(
+                    ID INTEGER PRIMARY KEY AUTOINCREMENT,
+                    USER_ID INTEGER NOT NULL,
+                    FRIEND_ID INTEGER NOT NULL,
+                    FOREIGN KEY(USER_ID) REFERENCES user(ID),
+                    FOREIGN KEY(FRIEND_ID) REFERENCES user(ID)
+                );
+                """
+            )
+        except Exception as e:
+            print(e)
+
+    def insert_friend(self, user_id, friend_id):
+        """
+        Adds the user's (user_id) friendship with friend_id to the db.
+        """
+        cursor = self.conn.execute(
+            "INSERT INTO friend (USER_ID, FRIEND_ID) VALUES (?,?);",
+            (user_id, friend_id),
+        )
+        self.conn.commit()
+        return cursor.lastrowid
+
+    def get_friends_by_user(self, user_id):
+        """
+        Returns all of the users friends.
+        """
+        cursor = self.conn.execute(
+            "SELECT * FROM user WHERE ID IN (SELECT FRIEND_ID FROM friend WHERE USER_ID = ?);",
+            (user_id,),
+        )
+        friends = []
+        for row in cursor:
+            friends.append({"id": row[0], "name": row[1], "username": row[2]})
+        return friends
 
 
 # Only <=1 instance of the database driver
