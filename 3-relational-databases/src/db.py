@@ -235,6 +235,34 @@ class DatabaseDriver(object):
             friends.append({"id": row[0], "name": row[1], "username": row[2]})
         return friends
 
+    # TASK 2
+    def join_query(self, id):
+        """
+        Returns the transactions of the given user.
+        """
+        cursor = self.conn.execute(
+            """
+            SELECT S.NAME, R.NAME, T.AMOUNT, T.MESSAGE, T.ACCEPTED, T.TIMESTAMP 
+            FROM transactions T, user S, user R 
+            WHERE (T.SENDER_ID = ? OR T.RECEIVER_ID = ?) 
+            AND T.SENDER_ID = S.ID AND T.RECEIVER_ID = R.ID;
+            """,
+            (id, id),
+        )
+        transactions = []
+        for row in cursor:
+            transactions.append(
+                {
+                    "sender_name": row[0],
+                    "receiver_name": row[1],
+                    "amount": row[2],
+                    "messge": row[3],
+                    "accepted": row[4],
+                    "timestamp": row[5],
+                }
+            )
+        return transactions
+
 
 # Only <=1 instance of the database driver
 # exists within the app at all times
