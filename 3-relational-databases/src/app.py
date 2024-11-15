@@ -131,7 +131,7 @@ def create_transaction():
             DB.send_money_to_user(sender_id, receiver_id, amount)
         return success_response(transaction, 201)
     except IntegrityError:
-        return failure_response("Users not found.")
+        return failure_response("One or more users not found.")
 
 
 @app.route("/api/transactions/<int:transaction_id>/", methods=["POST"])
@@ -170,6 +170,28 @@ def accept_or_deny_request(transaction_id):
         )
 
     return success_response(DB.get_transaction_by_id(transaction_id))
+
+
+# OPTIONAL TASKS
+# TASK 1
+@app.route("/api/extra/users/<int:user_id>/friends/")
+def get_friends(user_id):
+    """
+    Returns the user's friends.
+    """
+    user = DB.get_user_by_id(user_id)
+    if user is None:
+        return failure_response("User not found.")
+    return success_response({"friends": DB.get_friends_by_user(user_id)})
+
+
+@app.route("/api/extra/users/<int:user_id>/friends/<int:friend_id>/", methods=["POST"])
+def add_friend(user_id, friend_id):
+    try:
+        DB.insert_friend(user_id, friend_id)
+        return success_response("", 201)
+    except IntegrityError:
+        return failure_response("One or more users not found.")
 
 
 # DEPRECATED
