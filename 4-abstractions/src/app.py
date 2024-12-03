@@ -4,7 +4,7 @@ from db import db
 from flask import Flask
 
 # define db filename
-db_filename = "todo.db"
+db_filename = "cms.db"
 app = Flask(__name__)
 
 # setup config
