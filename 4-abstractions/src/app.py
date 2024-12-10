@@ -27,70 +27,76 @@ def failure_response(message, code=404):
     return json.dumps({"error": message}), code
 
 
-# -- TASK ROUTES ------------------------------------------------------
+# -- COURSE ROUTES ----------------------------------------------------
 
 
 @app.route("/")
-@app.route("/tasks/")
-def get_tasks():
+@app.route("/api/courses/")
+def get_courses():
     """
-    Endpoint for getting all tasks
-    """
-    pass
-
-
-@app.route("/tasks/", methods=["POST"])
-def create_task():
-    """
-    Endpoint for creating a new task
+    Endpoint for getting all courses
     """
     pass
 
 
-@app.route("/tasks/<int:task_id>/")
-def get_task(task_id):
+@app.route("/api/courses/", methods=["POST"])
+def create_course():
     """
-    Endpoint for getting a task by id
-    """
-    pass
-
-
-@app.route("/tasks/<int:task_id>/", methods=["POST"])
-def update_task(task_id):
-    """
-    Endpoint for updating a task by id
+    Endpoint for creating a new course
     """
     pass
 
 
-@app.route("/tasks/<int:task_id>/", methods=["DELETE"])
-def delete_task(task_id):
+@app.route("/api/courses/<int:course_id>/")
+def get_course(course_id):
     """
-    Endpoint for deleting a task by id
-    """
-    pass
-
-
-# -- SUBTASK ROUTES ---------------------------------------------------
-
-
-@app.route("/tasks/<int:task_id>/subtasks/", methods=["POST"])
-def create_subtask(task_id):
-    """
-    Endpoint for creating a subtask
-    for a task by id
+    Endpoint for getting a course by id
     """
     pass
 
 
-# -- CATEGORY ROUTES --------------------------------------------------
-
-
-@app.route("/tasks/<int:task_id>/category/", methods=["POST"])
-def assign_category(task_id):
+@app.route("/api/courses/<int:course_id>/", methods=["DELETE"])
+def delete_course(course_id):
     """
-    Endpoint for assigning a category
-    to a task by id
+    Endpoint for deleting a course by id
+    """
+    pass
+
+
+# -- USER ROUTES ------------------------------------------------------
+
+
+@app.route("/api/users/", methods=["POST"])
+def create_user():
+    """
+    Endpoint for creating a user
+    """
+    pass
+
+
+@app.route("/api/users/<int:user_id>/")
+def get_user(user_id):
+    """
+    Endpoint for getting a user by id
+    """
+    pass
+
+
+@app.route("/api/courses/<int:course_id>/add/", methods=["POST"])
+def add_user_to_course(course_id):
+    """
+    Endpoint for adding a user to a course by id
+    """
+    pass
+
+
+# -- ASSIGNMENT ROUTES ------------------------------------------------
+
+
+@app.route("/api/courses/<int:course_id>/assignment/", methods=["POST"])
+def create_assignment(course_id):
+    """
+    Endpoint for creating an assignment for a course by id
     """
     pass
 
