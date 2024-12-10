@@ -3,6 +3,19 @@ from flask_sqlalchemy import SQLAlchemy
 db = SQLAlchemy()
 
 # implement database model classes
+student_courses = db.Table(
+    "student_courses",
+    db.Model.metadata,
+    db.Column("user_id", db.Integer, db.ForeignKey("users.id")),
+    db.Column("course_id", db.Integer, db.ForeignKey("courses.id")),
+)
+
+instructor_courses = db.Table(
+    "instructor_courses",
+    db.Model.metadata,
+    db.Column("user_id", db.Integer, db.ForeignKey("users.id")),
+    db.Column("course_id", db.Integer, db.ForeignKey("courses.id")),
+)
 
 
 class Course(db.Model):
@@ -14,6 +27,15 @@ class Course(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     code = db.Column(db.String, nullable=False)
     name = db.Column(db.String, nullable=False)
+    assignments = db.relationship(
+        "Assignment", cascade="delete", back_populates="course"
+    )
+    instructors = db.relationship(
+        "User", secondary=instructor_courses, back_populates="courses"
+    )
+    students = db.relationship(
+        "User", secondary=student_courses, back_populates="courses"
+    )
 
     def __init__(self, **kwargs):
         """
@@ -38,6 +60,7 @@ class Assignment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String, nullable=False)
     due_date = db.Column(db.Integer, nullable=False)
+    course = db.relationship("Course", back_populates="assignments")
 
     def __init__(self, **kargs):
         """
@@ -62,6 +85,11 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable=False)
     netid = db.Column(db.String, nullable=False)
+    courses = db.relationship(
+        "Course",
+        secondary=union(instructor_courses, student_courses).alias("all_user_courses"),
+        viewonly=True,
+    )
 
     def __init__(self, **kwargs):
         """
