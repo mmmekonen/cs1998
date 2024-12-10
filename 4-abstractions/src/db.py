@@ -48,6 +48,19 @@ class Course(db.Model):
         """
         Serialize a Course object
         """
+        return {
+            "id": self.id,
+            "code": self.code,
+            "name": self.name,
+            "assignments": [a.simple_serialize() for a in self.assignments],
+            "instructors": [i.simple_serialize() for i in self.instructors],
+            "students": [s.simple_serialize() for s in self.students],
+        }
+
+    def simple_serialize(self):
+        """
+        Serialize a Course object without assignment, instructor, or student fields
+        """
         return {"id": self.id, "code": self.code, "name": self.name}
 
 
@@ -72,6 +85,17 @@ class Assignment(db.Model):
     def serialize(self):
         """
         Serialize an Assignment object
+        """
+        return {
+            "id": self.id,
+            "title": self.title,
+            "due_date": self.due_date,
+            "course": self.course.simple_serialize(),
+        }
+
+    def simple_serialize(self):
+        """
+        Serialize an Assignment object without course field
         """
         return {"id": self.id, "title": self.title, "due_date": self.due_date}
 
@@ -101,5 +125,16 @@ class User(db.Model):
     def serialize(self):
         """
         Serialize a User object
+        """
+        return {
+            "id": self.id,
+            "name": self.name,
+            "netid": self.netid,
+            "courses": [c.simple_serialize() for c in self.courses],
+        }
+
+    def simple_serialize(self):
+        """
+        Serialize a User object without course field
         """
         return {"id": self.id, "name": self.name, "netid": self.netid}
