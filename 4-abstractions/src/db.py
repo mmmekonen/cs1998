@@ -73,6 +73,7 @@ class Assignment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String, nullable=False)
     due_date = db.Column(db.Integer, nullable=False)
+    course_id = db.Column(db.Integer, db.ForeignKey("courses.id"), nullable=False)
     course = db.relationship("Course", back_populates="assignments")
 
     def __init__(self, **kargs):
@@ -111,7 +112,9 @@ class User(db.Model):
     netid = db.Column(db.String, nullable=False)
     courses = db.relationship(
         "Course",
-        secondary=union(instructor_courses, student_courses).alias("all_user_courses"),
+        secondary=db.union(instructor_courses.select(), student_courses.select()).alias(
+            "all_user_courses"
+        ),
         viewonly=True,
     )
 
