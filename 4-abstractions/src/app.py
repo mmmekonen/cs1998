@@ -1,7 +1,8 @@
 import json
 
 from db import db
-from flask import Flask
+from flask import Flask, request
+from db import Course, User, Assignment
 
 # define db filename
 db_filename = "cms.db"
@@ -27,6 +28,16 @@ def failure_response(message, code=404):
     return json.dumps({"error": message}), code
 
 
+# helper for writing error messages
+def create_message(fields):
+    return (
+        ", ".join(fields[:-1])
+        + (" and " if len(fields) > 1 else "")
+        + fields[-1]
+        + " not provided."
+    )
+
+
 # -- COURSE ROUTES ----------------------------------------------------
 
 
@@ -36,7 +47,8 @@ def get_courses():
     """
     Endpoint for getting all courses
     """
-    pass
+    courses = [c.serialize() for c in Course.query.all()]
+    return success_response({"courses": courses})
 
 
 @app.route("/api/courses/", methods=["POST"])
@@ -44,7 +56,22 @@ def create_course():
     """
     Endpoint for creating a new course
     """
-    pass
+    body = json.loads(request.data)
+    code = body.get("code")
+    name = body.get("name")
+
+    fields = []
+    if code is None:
+        fields.append("Code")
+    if name is None:
+        fields.append("Name")
+    if fields != []:
+        return failure_response(create_message(fields), 400)
+
+    new_course = Course(code=code, name=name)
+    db.session.add(new_course)
+    db.session.commit()
+    return success_response(new_course.serialize(), 201)
 
 
 @app.route("/api/courses/<int:course_id>/")
@@ -52,7 +79,10 @@ def get_course(course_id):
     """
     Endpoint for getting a course by id
     """
-    pass
+    course = Course.query.filter_by(id=course_id).first()
+    if course is None:
+        return failure_response("Course not found!")
+    return success_response(course.serialize())
 
 
 @app.route("/api/courses/<int:course_id>/", methods=["DELETE"])
@@ -60,7 +90,12 @@ def delete_course(course_id):
     """
     Endpoint for deleting a course by id
     """
-    pass
+    course = Course.query.filter_by(id=course_id).first()
+    if course is None:
+        return failure_response("Course not found!")
+    db.session.delete(course)
+    db.session.commit()
+    return success_response(course.serialize())
 
 
 # -- USER ROUTES ------------------------------------------------------
