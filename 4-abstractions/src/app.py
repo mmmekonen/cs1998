@@ -179,7 +179,26 @@ def create_assignment(course_id):
     """
     Endpoint for creating an assignment for a course by id
     """
-    pass
+    course = Course.query.filter_by(id=course_id).first()
+    if course is None:
+        return failure_response("Course not found!")
+
+    body = json.loads(request.data)
+    title = body.get("title")
+    due_date = body.get("due_date")
+
+    fields = []
+    if title is None:
+        fields.append("Title")
+    if due_date is None:
+        fields.append("Due_date")
+    if fields != []:
+        return failure_response(create_message(fields), 400)
+
+    new_assignment = Assignment(title=title, due_date=due_date, course_id=course_id)
+    db.session.add(new_assignment)
+    db.session.commit()
+    return success_response(new_assignment.serialize(), 201)
 
 
 if __name__ == "__main__":
