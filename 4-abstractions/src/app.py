@@ -106,7 +106,22 @@ def create_user():
     """
     Endpoint for creating a user
     """
-    pass
+    body = json.loads(request.data)
+    name = body.get("name")
+    netid = body.get("netid")
+
+    fields = []
+    if name is None:
+        fields.append("Name")
+    if netid is None:
+        fields.append("Netid")
+    if fields != []:
+        return failure_response(create_message(fields), 400)
+
+    new_user = User(name=name, netid=netid)
+    db.session.add(new_user)
+    db.session.commit()
+    return success_response(new_user.serialize(), 201)
 
 
 @app.route("/api/users/<int:user_id>/")
@@ -114,7 +129,10 @@ def get_user(user_id):
     """
     Endpoint for getting a user by id
     """
-    pass
+    user = User.query.filter_by(id=user_id).first()
+    if user is None:
+        return failure_response("User not found!")
+    return success_response(user.serialize())
 
 
 @app.route("/api/courses/<int:course_id>/add/", methods=["POST"])
@@ -122,7 +140,35 @@ def add_user_to_course(course_id):
     """
     Endpoint for adding a user to a course by id
     """
-    pass
+    course = Course.query.filter_by(id=course_id).first()
+    if course is None:
+        return failure_response("Course not found!")
+
+    body = json.loads(request.data)
+    user_id = body.get("user_id")
+    user_type = body.get("type")
+
+    fields = []
+    if user_id is None:
+        fields.append("User_id")
+    if user_type is None:
+        fields.append("Type")
+    if fields != []:
+        return failure_response(create_message(fields), 400)
+
+    user = User.query.filter_by(id=user_id).first()
+    if user is None:
+        return failure_response("User not found!")
+
+    if user_type == "student":
+        course.students.append(user)
+    elif user_type == "instructor":
+        course.instructors.append(user)
+    else:
+        return failure_response("Type must be either 'student' or 'instructor'.", 400)
+
+    db.session.commit()
+    return success_response(course.serialize())
 
 
 # -- ASSIGNMENT ROUTES ------------------------------------------------
