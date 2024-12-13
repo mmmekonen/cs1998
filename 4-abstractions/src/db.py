@@ -76,12 +76,13 @@ class Assignment(db.Model):
     course_id = db.Column(db.Integer, db.ForeignKey("courses.id"), nullable=False)
     course = db.relationship("Course", back_populates="assignments")
 
-    def __init__(self, **kargs):
+    def __init__(self, **kwargs):
         """
         Initialize an Assignment object
         """
         self.title = kwargs.get("title")
         self.due_date = kwargs.get("due_date")
+        self.course_id = kwargs.get("course_id")
 
     def serialize(self):
         """
