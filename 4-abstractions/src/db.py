@@ -75,6 +75,9 @@ class Assignment(db.Model):
     due_date = db.Column(db.Integer, nullable=False)
     course_id = db.Column(db.Integer, db.ForeignKey("courses.id"), nullable=False)
     course = db.relationship("Course", back_populates="assignments")
+    submissions = db.relationship(
+        "Submission", cascade="delete", back_populates="assignment"
+    )
 
     def __init__(self, **kwargs):
         """
@@ -118,6 +121,7 @@ class User(db.Model):
         ),
         viewonly=True,
     )
+    submissions = db.relationship("Submission", cascade="delete", back_populates="user")
 
     def __init__(self, **kwargs):
         """
@@ -142,3 +146,48 @@ class User(db.Model):
         Serialize a User object without course field
         """
         return {"id": self.id, "name": self.name, "netid": self.netid}
+
+
+## OPTIONAL TASKS
+# TASK 1
+class Submission(db.Model):
+    """
+    Submission Model
+    """
+
+    __tablename__ = "submissions"
+    id = db.Column(db.Integer, primary_key=True)
+    score = db.Column(db.Integer)
+    content = db.Column(db.String, nullable=False)
+    assignment_id = db.Column(
+        db.Integer, db.ForeignKey("assignments.id"), nullable=False
+    )
+    assignment = db.relationship("Assignment", back_populates="submissions")
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    user = db.relationship("User", back_populates="submissions")
+
+    def __init__(self, **kwargs):
+        """
+        Initialize Submission object
+        """
+        self.content = kwargs.get("content")
+        self.assignment_id = kwargs.get("assignment_id")
+        self.user_id = kwargs.get("user_id")
+
+    def serialize(self):
+        """
+        Serialize a Submission object
+        """
+        return {
+            "id": self.id,
+            "score": self.score,
+            "content": self.content,
+            "user": self.user.simple_serialize(),
+            "assignment": self.assignment.simple_serialize(),
+        }
+
+    def simple_serialize(self):
+        """
+        Serialize a Submission object without assignment or user field
+        """
+        return {"id": self.id, "score": self.score, "content": self.content}
