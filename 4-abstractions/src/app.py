@@ -2,7 +2,7 @@ import json
 
 from db import db
 from flask import Flask, request
-from db import Course, User, Assignment
+from db import Course, User, Assignment, Submission
 
 # define db filename
 db_filename = "cms.db"
@@ -205,6 +205,9 @@ def create_assignment(course_id):
 # TASK 1
 @app.route("/api/courses/<int:course_id>/drop/", methods=["POST"])
 def drop_student(course_id):
+    """
+    Endpoint for dropping a student from a course
+    """
     course = Course.query.filter_by(id=course_id).first()
     if course is None:
         return failure_response("Course not found")
@@ -228,6 +231,9 @@ def drop_student(course_id):
 
 @app.route("/api/assignments/<int:assignment_id>/", methods=["POST"])
 def update_assignment(assignment_id):
+    """
+    Endpoint for updating an assignment by id
+    """
     body = json.loads(request.data)
     title = body.get("title")
     due_date = body.get("due_date")
@@ -245,6 +251,74 @@ def update_assignment(assignment_id):
 
     db.session.commit()
     return success_response(assignment.serialize())
+
+
+# TASK 2
+@app.route("/api/assignments/<int:assignment_id>/submit/", methods=["POST"])
+def submit_assignment(assignment_id):
+    """
+    Endpoint for submitting an assignment by id
+    """
+    assignment = Assignment.query.filter_by(id=assignment_id).first()
+    if assignment is None:
+        return failure_response("Assignment not found")
+
+    body = json.loads(request.data)
+    user_id = body.get("user_id")
+    content = body.get("content")
+    fields = []
+    if user_id is None:
+        fields.append("User_id")
+    if content is None:
+        fields.append("Content")
+    if fields != []:
+        return failure_response(create_message(fields), 400)
+
+    user = User.query.filter_by(id=user_id).first()
+    if user is None:
+        return failure_response("User not found")
+
+    if user not in assignment.course.students:
+        return failure_response("User does not have this assignment", 400)
+
+    new_submission = Submission(
+        content=content, user_id=user_id, assignment_id=assignment_id
+    )
+    db.session.add(new_submission)
+    db.session.commit()
+    return success_response(new_submission.serialize(), 201)
+
+
+@app.route("/api/assignments/<int:assignment_id>/grade/", methods=["POST"])
+def grade_assignment(assignment_id):
+    """
+    Endpoint for grading an assignment by id
+    """
+    assignment = Assignment.query.filter_by(id=assignment_id).first()
+    if assignment is None:
+        return failure_response("Assignment not found")
+
+    body = json.loads(request.data)
+    submission_id = body.get("submission_id")
+    score = body.get("score")
+    fields = []
+    if submission_id is None:
+        fields.append("Submission_id")
+    if score is None:
+        fields.append("Score")
+    if fields != []:
+        return failure_response(create_message(fields), 400)
+
+    submission = Submission.query.filter_by(id=submission_id).first()
+    if submission is None:
+        return failure_response("Submission not found")
+
+    if submission.assignment != assignment:
+        return failure_response("Submission does not match this assignment", 400)
+
+    submission.score = score
+    db.session.commit()
+    return success_response(submission.serialize())
 
 
 if __name__ == "__main__":
