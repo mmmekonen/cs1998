@@ -201,5 +201,51 @@ def create_assignment(course_id):
     return success_response(new_assignment.serialize(), 201)
 
 
+## OPTIONAL TASKS
+# TASK 1
+@app.route("/api/courses/<int:course_id>/drop/", methods=["POST"])
+def drop_student(course_id):
+    course = Course.query.filter_by(id=course_id).first()
+    if course is None:
+        return failure_response("Course not found")
+
+    body = json.loads(request.data)
+    user_id = body.get("user_id")
+    if user_id is None:
+        return failure_response(create_message(["User_id"]), 400)
+
+    user = User.query.filter_by(id=user_id).first()
+    if user is None:
+        return failure_response("User not found")
+
+    if user not in course.students:
+        return failure_response("User has not been added to this course")
+
+    course.students.remove(user)
+    db.session.commit()
+    return success_response(user.serialize())
+
+
+@app.route("/api/assignments/<int:assignment_id>/", methods=["POST"])
+def update_assignment(assignment_id):
+    body = json.loads(request.data)
+    title = body.get("title")
+    due_date = body.get("due_date")
+
+    assignment = Assignment.query.filter_by(id=assignment_id).first()
+    if assignment is None:
+        return failure_response("Assignment not found")
+
+    if title is None and due_date is None:
+        return failure_response("Title or due_date must be provided.", 400)
+    if not title is None:
+        assignment.title = title
+    if not due_date is None:
+        assignment.due_date = due_date
+
+    db.session.commit()
+    return success_response(assignment.serialize())
+
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8000, debug=True)
