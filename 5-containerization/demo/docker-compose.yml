@@ -1,0 +1,13 @@
+version: "3"
+services:
+  demo:
+    image: demo
+    ports:
+      - "5000:5000"
+#EXAMPLE OF MULTI-CONTAINER
+#  webapp:
+#    image: webapp
+#    ports:
+#      - "3000:3000"
+#    depends_on:
+#      - demo
