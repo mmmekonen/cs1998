@@ -1,4 +1,3 @@
-import os
 import sqlite3
 
 
@@ -35,7 +34,8 @@ class DatabaseDriver(object):
                     ID INTEGER PRIMARY KEY AUTOINCREMENT,
                     NAME TEXT NOT NULL,
                     USERNAME TEXT NOT NULL,
-                    BALANCE INTEGER NOT NULL
+                    BALANCE INTEGER NOT NULL,
+                    EMAIL TEXT
                 );
                 """
             )
@@ -69,16 +69,18 @@ class DatabaseDriver(object):
         cursor = self.conn.execute("SELECT * FROM user;")
         users = []
         for row in cursor:
-            users.append({"id": row[0], "name": row[1], "username": row[2]})
+            users.append(
+                {"id": row[0], "name": row[1], "username": row[2], "email": row[4]}
+            )
         return users
 
-    def insert_user(self, name, username, balance):
+    def insert_user(self, name, username, balance, email):
         """
-        Inserts a user into the db with the given name, username, and balance.
+        Inserts a user into the db with the given name, username, balance, and email.
         """
         cursor = self.conn.execute(
-            "INSERT INTO user (NAME, USERNAME, BALANCE) VALUES (?,?,?);",
-            (name, username, balance),
+            "INSERT INTO user (NAME, USERNAME, BALANCE, EMAIL) VALUES (?,?,?,?);",
+            (name, username, balance, email),
         )
         self.conn.commit()
         return cursor.lastrowid
@@ -103,7 +105,13 @@ class DatabaseDriver(object):
         cursor = self.conn.execute("SELECT * FROM user WHERE id = ?;", (id,))
         user = None
         for row in cursor:
-            user = {"id": row[0], "name": row[1], "username": row[2], "balance": row[3]}
+            user = {
+                "id": row[0],
+                "name": row[1],
+                "username": row[2],
+                "balance": row[3],
+                "email": row[4],
+            }
 
         if user:
             user["transactions"] = self.get_transactions_by_user(id)
