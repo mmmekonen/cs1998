@@ -4,3 +4,6 @@ itsdangerous==2.1.2
 Jinja2==3.1.2
 MarkupSafe==2.1.1
 Werkzeug==2.2.2
+sendgrid==6.11.0
+python-http-client==3.3.7
+starkbank-ecdsa==2.2.0

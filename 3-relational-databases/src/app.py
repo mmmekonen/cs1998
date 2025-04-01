@@ -1,9 +1,11 @@
 import json
 from flask import Flask, request
 import db
-import hashlib
 from datetime import datetime
 from sqlite3 import IntegrityError
+import sendgrid
+from sendgrid.helpers.mail import Email, To, Mail, Content
+import os
 
 app = Flask(__name__)
 DB = db.DatabaseDriver()
@@ -41,6 +43,7 @@ def create_user():
     name = body.get("name")
     username = body.get("username")
     balance = body.get("balance", 0)
+    email = body.get("email")
 
     if name is None and username is None:
         return failure_response("Name and username were not provided.", 400)
@@ -49,7 +52,7 @@ def create_user():
     elif username is None:
         return failure_response("Username was not provided.", 400)
 
-    user_id = DB.insert_user(name, username, balance)
+    user_id = DB.insert_user(name, username, balance, email)
     user = DB.get_user_by_id(user_id)
     if user is None:
         return failure_response("Something went wrong while creating the user!", 500)
@@ -129,6 +132,9 @@ def create_transaction():
             if sender["balance"] < amount:
                 return failure_response("Sender does not have enough balance", 403)
             DB.send_money_to_user(sender_id, receiver_id, amount)
+            send_email(
+                amount, DB.get_user_by_id(sender_id), DB.get_user_by_id(receiver_id)
+            )
         return success_response(transaction, 201)
     except IntegrityError:
         return failure_response("One or more users not found.")
@@ -161,6 +167,11 @@ def accept_or_deny_request(transaction_id):
                 transaction["amount"],
             )
             DB.update_transaction_by_id(transaction_id, time, True)
+            send_email(
+                transaction["amount"],
+                DB.get_user_by_id(transaction["sender_id"]),
+                DB.get_user_by_id(transaction["receiver_id"]),
+            )
         else:
             DB.update_transaction_by_id(transaction_id, time, False)
     else:
@@ -204,6 +215,46 @@ def get_join_transactions(id):
     if user is None:
         return failure_response("User not found.")
     return success_response({"transactions": DB.join_query(id)})
+
+
+# TASK 3
+def send_email(amount, sender, receiver):
+    receiver_sbj = "You've Received Money!"
+    receiver_cnt = Content(
+        "text/plain",
+        f"You've received ${amount} from {sender.get('name')}! Your balance is now ${receiver.get('balance')}.",
+    )
+
+    sender_sbj = "You've Sent Money!"
+    sender_cnt = Content(
+        "text/plain",
+        f"You've sent ${amount} to {receiver.get('name')}! Your balance is now ${sender.get('balance')}.",
+    )
+
+    fail_msg = []
+
+    if (r_email := receiver.get("email")) is not None:
+        sg = sendgrid.SendGridAPIClient(api_key=os.environ.get("SENDGRID_API_KEY"))
+        from_email = Email(os.environ.get("FROM_EMAIL"))
+        to_email = To(r_email)
+        mail = Mail(from_email, to_email, receiver_sbj, receiver_cnt)
+        response = sg.client.mail.send.post(request_body=mail.get())
+        if response.status_code != 201:
+            fail_msg.append("receiver")
+
+    if (s_email := sender.get("email")) is not None:
+        sg = sendgrid.SendGridAPIClient(api_key=os.environ.get("SENDGRID_API_KEY"))
+        from_email = Email(os.environ.get("FROM_EMAIL"))
+        to_email = To(s_email)
+        mail = Mail(from_email, to_email, sender_sbj, sender_cnt)
+        response = sg.client.mail.send.post(request_body=mail.get())
+        if response.status_code != 201:
+            fail_msg.append("sender")
+
+    if fail_msg:
+        return failure_response(f"Unable to send email to {'and'.join(fail_msg)}.")
+
+    return success_response("Emails sent.", 201)
 
 
 # DEPRECATED
