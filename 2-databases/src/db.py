@@ -1,4 +1,3 @@
-import os
 import sqlite3
 
 
@@ -14,7 +13,7 @@ def singleton(cls):
     return getinstance
 
 
-class DatabaseDriver(object):
+class DatabaseDriver:
     """
     Database driver for the Task app.
     Handles with reading and writing data with the database.

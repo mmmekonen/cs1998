@@ -1,15 +1,15 @@
 import base64
 import datetime
-import io
-from io import BytesIO
-from mimetypes import guess_extension, guess_type
 import os
 import random
 import re
 import string
-from PIL import Image
+from io import BytesIO
+from mimetypes import guess_extension, guess_type
+
 import boto3
 from flask_sqlalchemy import SQLAlchemy
+from PIL import Image
 
 db = SQLAlchemy()
 

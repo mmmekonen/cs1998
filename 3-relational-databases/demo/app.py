@@ -1,7 +1,8 @@
 import json
-from flask import Flask, request
-import db
+import sqlite3.IntegrityError
 
+import db
+from flask import Flask, request
 
 DB = db.DatabaseDriver()
 
@@ -62,7 +63,7 @@ def delete_task(task_id):
     return success_response(task)
 
 
-@app.route("/task/<int:task_id>/subtasks/", methods=[POST])
+@app.route("/task/<int:task_id>/subtasks/", methods=["POST"])
 def create_subtask(task_id):
     body = json.loads(request.data)
     description = body["description"]
