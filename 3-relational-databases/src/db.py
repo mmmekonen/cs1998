@@ -13,7 +13,7 @@ def singleton(cls):
     return getinstance
 
 
-class DatabaseDriver(object):
+class DatabaseDriver:
     """
     Database driver for the Task app.
     Handles with reading and writing data with the database.
@@ -250,9 +250,9 @@ class DatabaseDriver(object):
         """
         cursor = self.conn.execute(
             """
-            SELECT S.NAME, R.NAME, T.AMOUNT, T.MESSAGE, T.ACCEPTED, T.TIMESTAMP 
-            FROM transactions T, user S, user R 
-            WHERE (T.SENDER_ID = ? OR T.RECEIVER_ID = ?) 
+            SELECT S.NAME, R.NAME, T.AMOUNT, T.MESSAGE, T.ACCEPTED, T.TIMESTAMP
+            FROM transactions T, user S, user R
+            WHERE (T.SENDER_ID = ? OR T.RECEIVER_ID = ?)
             AND T.SENDER_ID = S.ID AND T.RECEIVER_ID = R.ID;
             """,
             (id, id),

@@ -1,7 +1,7 @@
 import json
-from flask import Flask, request
-import db
 
+import db
+from flask import Flask, request
 
 DB = db.DatabaseDriver()
 

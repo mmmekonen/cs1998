@@ -1,7 +1,8 @@
-import json
-from flask import Flask, request
-import db
 import hashlib
+import json
+
+import db
+from flask import Flask, request
 
 app = Flask(__name__)
 DB = db.DatabaseDriver()

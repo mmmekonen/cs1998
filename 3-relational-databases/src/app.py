@@ -1,11 +1,12 @@
 import json
-from flask import Flask, request
-import db
+import os
 from datetime import datetime
 from sqlite3 import IntegrityError
+
+import db
 import sendgrid
-from sendgrid.helpers.mail import Email, To, Mail, Content
-import os
+from flask import Flask, request
+from sendgrid.helpers.mail import Content, Email, Mail, To
 
 app = Flask(__name__)
 DB = db.DatabaseDriver()

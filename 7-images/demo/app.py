@@ -1,10 +1,8 @@
 import json
-
-from db import db
-from db import Asset
-from flask import Flask
-from flask import request
 import os
+
+from db import Asset, db
+from flask import Flask, request
 
 db_filename = "images.db"
 app = Flask(__name__)

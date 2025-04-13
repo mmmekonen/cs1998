@@ -1,8 +1,7 @@
 import json
 
-from db import db
+from db import Assignment, Course, Submission, User, db
 from flask import Flask, request
-from db import Course, User, Assignment, Submission
 
 # define db filename
 db_filename = "cms.db"
@@ -244,9 +243,9 @@ def update_assignment(assignment_id):
 
     if title is None and due_date is None:
         return failure_response("Title or due_date must be provided.", 400)
-    if not title is None:
+    if title is not None:
         assignment.title = title
-    if not due_date is None:
+    if due_date is not None:
         assignment.due_date = due_date
 
     db.session.commit()
