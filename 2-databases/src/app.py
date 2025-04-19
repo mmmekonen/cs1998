@@ -1,5 +1,6 @@
 import hashlib
 import json
+import os
 
 import db
 from flask import Flask, request
@@ -217,18 +218,12 @@ def hash_password(password):
 
 
 # TASK 3
-from dotenv import dotenv_values
-
-# get environment variables
-config = dotenv_values(".env")
-
-
 def hash_password_salt(password):
     """
     Returns the hashed password using salting and iterative hashing.
     """
-    password += config.get("PASSWORD_SALT")
-    for i in range(int(config.get("NUMBER_OF_ITERATIONS"))):
+    password += os.getenv("PASSWORD_SALT")
+    for i in range(int(os.getenv("NUMBER_OF_ITERATIONS"))):
         password = hashlib.sha256(password.encode()).hexdigest()
     return password
 
