@@ -50,7 +50,7 @@ class Asset(db.Model):
 
     def create(self, image_data):
         """
-        Given an image in base64 form, does thw following:
+        Given an image in base64 form, does the following:
         1. Rejects the image if it is not a supported filetype
         2. Generates a random string for the image filename
         3. Decodes the image and attempts to upload it to AWS
