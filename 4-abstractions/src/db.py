@@ -1,6 +1,13 @@
+import os
+
+import boto3
 from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
+
+BASE_DIR = os.getcwd()
+S3_BUCKET_NAME = os.environ.get("S3_BUCKET_NAME")
+S3_BASE_URL = f"https://{S3_BUCKET_NAME}.s3.us-east-2.amazonaws.com"
 
 # implement database model classes
 student_courses = db.Table(
@@ -149,7 +156,7 @@ class User(db.Model):
 
 
 ## OPTIONAL TASKS
-# TASK 1
+# TASK 1/3
 class Submission(db.Model):
     """
     Submission Model
@@ -170,9 +177,23 @@ class Submission(db.Model):
         """
         Initialize Submission object
         """
-        self.content = kwargs.get("content")
+        self.upload_content(kwargs.get("content"))
         self.assignment_id = kwargs.get("assignment_id")
         self.user_id = kwargs.get("user_id")
+
+    def upload_content(self, content):
+        """
+        Uploads the submission's file content to s3
+        """
+        try:
+            filename = content[content.rfind("\\") + 1 :]
+            s3 = boto3.client("s3")
+            s3.upload_file(
+                content, S3_BUCKET_NAME, filename, ExtraArgs={"ACL": "public-read"}
+            )
+            self.content = f"{S3_BASE_URL}/{filename}"
+        except Exception as e:
+            print(f"Error when uploading file: {e}")
 
     def serialize(self):
         """

@@ -252,7 +252,7 @@ def update_assignment(assignment_id):
     return success_response(assignment.serialize())
 
 
-# TASK 2
+# TASK 2/3
 @app.route("/api/assignments/<int:assignment_id>/submit/", methods=["POST"])
 def submit_assignment(assignment_id):
     """
@@ -262,7 +262,7 @@ def submit_assignment(assignment_id):
     if assignment is None:
         return failure_response("Assignment not found")
 
-    body = json.loads(request.data)
+    body = request.form
     user_id = body.get("user_id")
     content = body.get("content")
     fields = []
