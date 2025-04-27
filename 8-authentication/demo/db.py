@@ -12,10 +12,12 @@ class User(db.Model):
     """
     User model
     """
+
     __tablename__ = "user"
     id = db.Column(db.Integer, primary_key=True)
 
     # User information
+    first_name = db.Column(db.String, nullable=False, unique=False)
     email = db.Column(db.String, nullable=False, unique=True)
     password_digest = db.Column(db.String, nullable=False)
 
@@ -28,8 +30,11 @@ class User(db.Model):
         """
         Initializes a User object
         """
+        self.first_name = kwargs.get("first_name")
         self.email = kwargs.get("email")
-        self.password_digest = bcrypt.hashpw(kwargs.get("password").encode("utf8"), bcrypt.gensalt(rounds=13))
+        self.password_digest = bcrypt.hashpw(
+            kwargs.get("password").encode("utf8"), bcrypt.gensalt(rounds=13)
+        )
         self.renew_session()
 
     def _urlsafe_base_64(self):
@@ -59,7 +64,10 @@ class User(db.Model):
         """
         Verifies the session token of a user
         """
-        return session_token == self.session_token and datetime.datetime.now() < self.session_expiration
+        return (
+            session_token == self.session_token
+            and datetime.datetime.now() < self.session_expiration
+        )
 
     def verify_update_token(self, update_token):
         """
